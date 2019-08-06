@@ -1,0 +1,201 @@
+﻿@{
+    Layout = "~/Views/Shared/_ViewInfo.cshtml";
+}
+@model OriginAdminWeb.Models.ModuleViewMoudle
+@using (Ajax.BeginForm("SaveModule", "SysModule", new AjaxOptions { HttpMethod = "Post", OnSuccess = "ajaxSuccess", OnFailure = "ajaxError", OnBegin = "fromValidate" }, new { @id = "ModuleForm" }))
+{
+    @Html.HiddenFor(s => s.SysModule.ParentId)
+    @Html.HiddenFor(s => s.SysModule.ModuleId)
+    @Html.HiddenFor(s => s.SysModule.ModuleLevel)
+    @Html.HiddenFor(s => s.SysModule.IsDel)
+    @Html.HiddenFor(s => s.ParentModuleName)
+    @Html.HiddenFor(s => s.SysModule.IsDisplay)
+    <div class="form-horizontal">
+        <div class="box-primary">
+            <div class="box-title" style="color:#3366CC; font-size:18px;"><i class="fa fa-file-text-o"></i>&nbsp;@ViewBag.Title</div>
+            <hr />
+            <div class="box-body">
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">上级模块：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9" style="margin-top:6px;">
+                        <select class="easyui-combotree form-control input-sm" id="ModuleTree"></select>
+                    </div>
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">
+                        <i class="fa fa-asterisk has_required"></i>@Html.LabelFor(m => m.SysModule.ModuleName, "模块名称", new { id = "ModuleNameLabel" })：
+                    </label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.TextBoxFor(m => m.SysModule.ModuleName, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">控制器：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.TextBoxFor(m => m.SysModule.ControllerName, new { @class = "form-control" })
+                    </div>
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">动作：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.TextBoxFor(m => m.SysModule.ActionName, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">按钮功能：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.DropDownListFor(c => c.SysModule.BtnId, ViewData["BtnIdList"] as SelectList, new { @class = "form-control" })
+                    </div>
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">按钮样式：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.DropDownListFor(c => c.BtnClass, ViewData["BtnClassList"] as SelectList, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">按钮大小：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.DropDownListFor(c => c.BtnSize, ViewData["BtnSizeList"] as SelectList, new { @class = "form-control" })
+                    </div>
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">排序：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.TextBoxFor(m => m.SysModule.Sort, new { @class = "form-control", type = "number" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">是否权限控制：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.DropDownListFor(c => c.SysModule.IsDel, ViewData["IsAuthorize"] as SelectList, new { @class = "form-control" })
+                    </div>
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">图标：</label>
+                    <div class="col-md-4 col-sm-4 col-xs-9">
+                        @Html.TextBoxFor(m => m.SysModule.Icon, new { @class = "form-control input-sm", @readonly = "readonly" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-2 col-xs-3 control-label">描述：</label>
+                    <div class="col-md-10 col-sm-10 col-xs-9">
+                        @Html.TextAreaFor(m => m.SysModule.Description, new { @class = "form-control input-sm" })
+                    </div>
+                </div>
+                @Html.Partial("_IconsList")
+
+            </div>
+            <div class="text-message text-center text-danger text-bold"></div>
+            <div class="box-footer text-center" id="SubmitBtn">
+                <button id="btnSure" type="button" class="btn btn-primary btn-sm"><span class="fa fa-check-circle-o"></span>&nbsp;确定</button>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    <script>
+        $(function () {
+            //设置滚动条
+            //setScroll();
+            //$(window).on("resize", setScroll);
+            SetIcon();
+            SetDisable();
+            //上级模块资源
+            $('#ModuleTree')
+                .combotree({
+                    url: '@Url.Action("GetModuleTree", "SysModule")',
+                    editable: true,
+                    onBeforeExpand: function (node) {
+                        $('#ModuleTree').combotree("tree").tree("options").url =
+                            "@Url.Action("GetModuleTree", "SysModule")?id=" + node.id;
+                    },
+                    onLoadSuccess: function () {
+                        $("#ModuleTree").combotree("setValues", $("#ParentModuleName").val());
+                    },
+                    onSelect: function (node) {
+                        if (node.id) {
+                            $("#Module_ParentId").val(node.id);
+                        }
+                        if (node.level) {
+                            $("#Module_ModuleLevel").val(node.level + 1);
+                        }
+                        SetDisable();
+                    }
+                });
+            //选中图标事件
+            $('i').on('click', function () {
+                var cla = $(this).attr('data-icon');
+                $(this).siblings('i').removeClass('iconSelect');
+                $(this).addClass('iconSelect');
+                $('#Module_Icon').val(cla);
+            });
+            //清除图标
+            $('#btnClearIcon').on('click', function () {
+                $(this).siblings('i').removeClass('iconSelect');
+                $('#Module_Icon').val('');
+            });
+        });
+
+        function SetIcon() {
+            var icon = $('#Module_Icon').val();
+            if (icon) {
+                $('.container-fluid i')
+                    .each(function () {
+                        if ($(this).hasClass(icon)) {
+                            $(this).addClass('iconSelect');
+                        }
+                    });
+            }
+        }
+
+        function SetDisable() {
+            $("#ModuleNameLabel").html('模块名称');
+            $("#Icon").html('图标');
+            $('#BtnClass').attr('disabled', true);
+            $('#Module_BtnId').attr('disabled', true);
+            $('#BtnSize').attr('disabled', true);
+            var moduleLevel = $('#Module_ModuleLevel').val();
+            if (moduleLevel === "1") { //系统文件夹
+                $('#Module_ControllerName').attr('disabled', true);
+                $('#Module_ActionName').attr('disabled', true);
+            } else if (moduleLevel === "2") { //页面
+                $('#Module_ControllerName').attr('disabled', false);
+                $('#Module_ActionName').attr('disabled', false);
+            } else if (moduleLevel === "3") { //按钮
+                $("#ModuleNameLabel").html('按钮名称');
+                $("#Icon").html('按钮图标');
+                $('#Module_ControllerName').attr('disabled', false);
+                $('#Module_ActionName').attr('disabled', false);
+                $('#BtnClass').attr('disabled', false);
+                $('#Module_BtnId').attr('disabled', false);
+                $('#BtnSize').attr('disabled', false);
+            }
+        }
+
+        //表单验证
+        var fromValidate = $("#ModuleForm")
+            .validate({
+                rules: {
+                    ModuleName: {
+                        required: true,
+                        notEmpty: true
+                    },
+                    Sort: {
+                        required: true,
+                        digits: true
+                    }
+                },
+                messages: {
+                    'Module.ModuleName': {
+                        required: "模块名称名称不能为空！"
+                    },
+                    'Module.Sort': {
+                        required: "请输入合法的整数！",
+                        digits: "请输入合法的整数！"
+                    }
+                }, errorPlacement: function (error, element) {
+                    if (element.is(":radio"))
+                        error.appendTo(element.parent());
+                    else if (element.is(":checkbox"))
+                        error.appendTo(element.parent());
+                    else
+                        error.insertAfter(element);
+                },
+                errorElement: 'span',
+                errorClass: "has-error error_tip"
+            });
+    </script>
+}

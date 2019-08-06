@@ -1,0 +1,99 @@
+﻿@{ 
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>程序猿的登陆主页</title>
+    @Styles.Render("~/Content/bootstrap")
+    <link href="~/Content/Login/login.css" rel="stylesheet" />
+</head>
+<body class="loginpage" onload="load()">
+    <div id="mainBody">
+        <div id="cloud1" class="cloud"></div>
+        <div id="cloud2" class="cloud"></div>
+    </div>
+    <div class="logintop">
+        <span>程序猿的窝</span>
+
+    </div>
+    <div class="loginbody col-sm-12">
+        <div class="container">
+            @using (Html.BeginForm("CheckLogin", "SysUser", FormMethod.Post, new { @class = "login-form col-sm-6 col-sm-offset-3" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="login-wrap text-center">
+                    <h2>
+                     xxx
+                    </h2>
+                    <div class="input-group col-md-8 col-md-offset-2">
+                        <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                        <input id="UserName" name="UserName" value="admin" type="text" class="form-control" placeholder="账号">
+                    </div>
+                    <div class="input-group col-md-8 col-md-offset-2">
+                        <span class="input-group-addon"><i class="fa fa-key"></i></span>
+                        <input id="password" name="password" type="password" value="admin123" class="form-control" placeholder="密码">
+                    </div>
+                    <div class="input-group col-md-8 col-md-offset-2">
+                        @*<div class="input-group col-md-5">*@
+                        <span class="input-group-addon"><i class="fa fa-key"></i></span>
+                        <input id="code" name="code" type="text" class="form-control" placeholder="验证码" style="width:50%;">
+                        @*</div>*@
+                        @*<div class="input-group col-md-5">*@
+                        <img id="codeImg" alt="刷新验证码！" style="margin-bottom: -8px; cursor: pointer;" src="~/Common/verify_code.ashx" onclick="this.src=this.src+'?'" />
+                        @*<a href="javascript:$('#codeImg').trigger('click')">刷新</a>*@
+                        @*</div>*@
+                    </div>
+                    <div class="col-md-8 col-md-offset-2">
+                        <button id="btnLogin" class="btn-login btn btn-primary btn-lg btn-block" type="button">登录</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="loginbm">
+        <strong>版权所有 &copy; 2018-2999 Yan Yi</strong>
+    </div>
+</body>
+</html>
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jquery-form")
+@Scripts.Render("~/bundles/base-modal")
+<script src="~/Scripts/cloud.js"></script>
+<script>
+    $(function () {
+        
+        $('#btnLogin').click(function () {
+            if ($("#UserName").val().length <= 0) {
+                modals.info('请输入账号！');
+                return;
+            }
+            if ($("#password").val().length <= 0) {
+                modals.info('请输入密码！');
+                return;
+            }
+            //if ($("#code").val().length <= 0) {
+            //modals.info('请输入验证码！');
+            //    return;
+            //}
+            $("form").ajaxSubmit(function (data) {
+                if (data.type == 1) {
+                    window.location = '@Url.Action("Index","Home")';
+                }
+                else {
+                    modals.error(data.message);
+                }
+            });
+        });
+       // $('#btnLogin').click();
+    });
+    //function load() {
+    //    $('#btnLogin').click();
+    //}
+</script>

@@ -1,0 +1,74 @@
+﻿<!--Styles-->
+@Styles.Render("~/Content/bootstrap")
+@Styles.Render("~/Content/font")
+@Styles.Render("~/Content/bootstrap-treeview")
+@Styles.Render("~/Content/select2")
+@Styles.Render("~/Content/bootstrap-table")
+@Styles.Render("~/Content/ListStyle")
+@Styles.Render("~/Content/easyui")
+@RenderSection("head", required: false)
+<style>
+    .table th, .table td {
+        font-size: 12px !important;
+    }
+</style>
+<!--Body-->
+@RenderBody()
+<!--提醒弹窗-->
+<div id="MessageModel" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="MessageLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="MessageLabel">提醒</h4>
+            </div>
+            <div class="modal-body">
+                <p id="MessageBody"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default btn-md" data-dismiss="modal">关闭</button>
+                <button id="btnModelSure" type="button" class="btn btn-primary btn-md">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jquery-form")
+@Scripts.Render("~/Scripts/bootstrap")
+@Scripts.Render("~/Scripts/bootstrap-treeview")
+@Scripts.Render("~/Scripts/bootstrap-table")
+@Scripts.Render("~/Scripts/select2")
+@Scripts.Render("~/Scripts/easyui")
+<script src="~/Scripts/message.js"></script>
+@RenderSection("scripts", required: false)
+<script>
+    $(function () {
+        var $SubmitBtn = $('#SubmitBtn');
+        if ($SubmitBtn.length > 0) {
+            //$SubmitBtn.html('@Html.Raw(ViewBag.Btn)');
+            $('#btnSure').off('click').on('click', function () {
+                $("form").submit();
+            });
+        }
+    });
+    //String.prototype.Format = function (fmt) { //author: meizz
+    //    if (this == "")
+    //        return "";
+    //    var date = new Date(this);
+    //    console.log(date);
+    //    var o = {
+    //        "M+": date.getMonth() + 1, //月份
+    //        "d+": date.getDate(), //日
+    //        "h+": date.getHours(), //小时
+    //        "m+": date.getMinutes(), //分
+    //        "s+": date.getSeconds(), //秒
+    //        "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+    //        "S": date.getMilliseconds() //毫秒
+    //    };
+    //    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+    //    for (var k in o)
+    //        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    //    return fmt;
+    //}
+</script>

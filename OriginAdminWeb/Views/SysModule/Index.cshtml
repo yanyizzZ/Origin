@@ -1,0 +1,381 @@
+﻿@{
+    ViewBag.Title = "模块维护";
+    Layout = "~/Views/Shared/_AdminLte.cshtml";
+}
+@section head{
+    <style>
+        .module-tree {
+            padding-right: 0px;
+            margin-top: 0px;
+        }
+
+        .panel-left {
+            width: 20%;
+            float: left;
+            border-right: 1px solid #ddd;
+            min-height: 454px;
+        }
+
+        .panel-right {
+            width: 79%;
+            float: right;
+        }
+    </style>
+}
+<section class="content-header">
+    <h1>
+        <i class="fa fa-th-large"></i>权限管理
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>权限管理</a></li>
+        <li class="active">模块维护</li>
+    </ol>
+</section>
+
+<section class="content" style="background-color:#fff;">
+    <div class="box-fluid">
+        <div class="box-body">
+            <div class="panel-left">
+                <div id="ModuleTree" class="module-tree" style="width:98%; padding-right: 0px;margin-top: 0px;">
+                </div>
+            </div>
+            <div class="panel-right">
+                <div id="toolbar">
+                    <button id="btnAdd" type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span>&nbsp;新增</button>
+                    <button id="btnDeleteAll" type="button" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span>&nbsp;批量删除</button>
+                </div>
+                <table class="table table-bordered table-striped"
+                       data-show-export="true"
+                       data-show-columns="true"
+                       data-toggle="table"
+                       data-toolbar="#toolbar"
+                       data-search="true"
+                       data-show-refresh="true"
+                       data-show-toggle="true"
+                       data-detail-formatter="detailFormatter"
+                       data-minimum-count-columns="4"
+                       data-pagination="true"
+                       data-page-list="[10, 25, 50, 100, 500]"
+                       data-show-footer="false"></table>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@section scripts{
+    <script>
+        $(function () {
+            //$('#btnSearch').click(function () {
+            //    $(".table").bootstrapTable('refresh');
+            //});
+        //设置滚动条
+        //setScroll();
+        //$(window).on("resize", setScroll);
+        //调用函数，初始化模块树
+        bindTreeData();
+        //调用函数，初始化表格
+        initTable('');
+        //绑定新增，编辑按钮事件
+        $('#btnAdd,#btnEdit').on('click', function () {
+            var action = '';
+            var btn = $(this).attr('id');
+            var moduleKey = id;
+            if (btn === 'btnAdd') {
+                action = 'add';
+            } else {
+                action = 'edit';
+                var selections = $('.table').bootstrapTable('getSelections');
+                if (selections.length === 0) {
+                    $("#MessageBody").html("请选择一条数据进行编辑");
+                    $("#MessageLabel").html("错误提示");
+                    $('#MessageModel').modal('show');
+                    return;
+                }
+                if (selections.length > 1) {
+                    $("#MessageBody").html("只能选择一条数据进行编辑");
+                    $("#MessageLabel").html("错误提示");
+                    $('#MessageModel').modal('show');
+                    return;
+                }
+                moduleKey = selections[0].ModuleId;
+            }
+            //调用fancybox弹出层   弹窗新增，编辑
+            $.fancybox({
+                helpers: {
+                    overlay: { closeClick: false }
+                },
+                autoscale: false,
+                iframe: { 'scrolling': 'no' },
+                padding: 20,
+                height: 580,
+                width: 900,
+                autoSize: false,
+                type: 'iframe',
+                'href': '@Url.Action("ModuleInfo", "SysModule")?method=' + action + '&moduleKey=' + moduleKey,
+                'afterClose': function () {
+                    bindTreeData();
+                    initTable(id);
+                }
+            });
+        });
+
+        $('#btnDeleteAll').on('click', function () {
+            var selections = $('.table').bootstrapTable('getSelections');
+            if (selections.length === 0) {
+                $("#btnModelSure").hide();
+                $("#MessageBody").html("请至少选择一条数据进行删除");
+                $("#MessageLabel").html("错误提示");
+                $('#MessageModel').modal('show');
+                return;
+            }
+            var keyArr = [];
+            $.each(selections, function (index, data) {
+                keyArr.push(data.ModuleId);
+            });
+            $("#MessageBody").html("是否确认删除数据（共" + selections.length + "条）？");
+            $("#MessageLabel").html("删除提示");
+            $('#MessageModel').modal('show');
+            $("#btnModelSure").show();
+            $("#btnModelSure").off('click').on('click', function () {
+                $("#MessageModel").modal('hide');
+                $.ajax({
+                    url: '@Url.Action("Delete", "SysModule")',
+                    type: "post",
+                    data: { moduleKeys: JSON.stringify(keyArr) },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.status === 'success') {
+                            bindTreeData();
+                            initTable(id);
+                        }
+                        else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            });
+        });
+        });
+
+    //获取模块树
+    function bindTreeData() {
+        $.ajax({
+            url: '@Url.Action("GetTreeData", "SysModule")',
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                initTree(data);
+            },
+            error: function () {
+            }
+        });
+    }
+    //模块树节点id
+    var id = '';
+    var nodeId = '';
+    var level = '';
+    //初始化树
+    function initTree(data) {
+        //绑定模块树
+        var $Tree = $('#ModuleTree').treeview({
+            data: data,
+            showIcon: true,
+            levels: 2,
+            highlightSelected: true,
+            selectable: true
+        });
+        expandTree($Tree);
+        $('#ModuleTree').on('nodeSelected', function (event, node) {
+            id = node.id;
+            nodeId = node.nodeId;
+            level = node.level;
+            if (id) {
+                initTable(id);
+            }
+        });
+    }
+    //展开指定节点
+    function expandTree($Tree) {
+        if (nodeId) {
+            var node = $Tree.treeview('getNode', nodeId);
+            node.state.expanded = true;
+            node.state.selected = true;
+            expandParentNode($Tree, node);
+        }
+    }
+    //展开父节点
+    function expandParentNode($Tree, node) {
+        var parentNode = $Tree.treeview('getParent', node);
+        if (parentNode.nodeId) {
+            $Tree.treeview('expandNode', [parentNode.nodeId, { silent: true }]);
+            expandParentNode($Tree, parentNode.nodeId);
+        }
+    }
+
+        function initTable(id) {
+        //先销毁表格
+        $('.table').bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $(".table").bootstrapTable({
+            method: 'get',
+            url: '@Url.Action("GetData", "SysModule")?key=' + id,
+            dataType: "json",
+                cache: false,
+                pageSize: 15,
+                search: true,
+                uniqueId: "ModuleId",
+                sidePagination: "client",
+                columns: [
+                    {
+                        field: '_state',
+                        checkbox: true
+                    }, {
+                        field: 'ModuleName',
+                        title: '模块名称',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'ControllerName',
+                        title: '控制器',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'ActionName',
+                        title: '方法',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'BtnClass',
+                        title: '按钮样式',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'BtnId',
+                        title: '按钮主键',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'Icon',
+                        title: '图标',
+                        align: 'center',
+                        sortable: true,
+                        formatter: iconFormatter
+                    }, {
+                        field: 'Sort',
+                        title: '排序',
+                        align: 'center',
+                        sortable: true,
+                        formatter: dataFormatter
+                    }, {
+                        field: 'Description',
+                        title: '描述',
+                        align: 'center',
+                        formatter: dataFormatter
+                    }, {
+                        field: '_operate',
+                        title: '操作',
+                        align: 'center',
+                        formatter: operateFormatter,
+                        events: operateEvents
+                    }
+                ],
+                onLoadSuccess: function (data) {
+                    //setPanelHeight();
+                },
+                onLoadError: function () {
+                }
+            });
+        }
+                //格式化图标
+        function iconFormatter(value, row, index) {
+            if (value !== '') {
+                return "<i class='" + value + "'></i>";
+            } else {
+                return "—";
+            }
+        }
+        //格式化数据
+        function dataFormatter(value, row, index) {
+            if ($.trim(value) !== '') {
+                return value;
+            } else {
+                return "—";
+            }
+        }
+        //行内按钮
+        function operateFormatter() {
+             return '<button id="btnEdit" type="button" class="btn btn-primary btn-xs"><span class=""></span>&nbsp;编辑</button>&nbsp;<button id="btnDelete" type="button" class="btn btn-danger btn-xs"><span class=""></span>&nbsp;删除</button>&nbsp;';;
+        }
+        //行内事件
+        window.operateEvents = {
+            'click #btnEdit': function (e, value, row, index) {
+                //调用fancybox弹出层   弹窗编辑
+                $.fancybox({
+                    helpers: {
+                        overlay: { closeClick: false }
+                    },
+                    autoscale: false,
+                    iframe: { 'scrolling': 'no' },
+                    padding: 20,
+                    height: 580,
+                    width: 900,
+                    autoSize: false,
+                    type: 'iframe',
+                    'href': '@Url.Action("ModuleInfo", "SysModule")?method=edit&moduleKey=' + row.ModuleId,
+                'afterClose': function () {
+                    bindTreeData();
+                    initTable(id);
+                }
+            });
+        },
+        'click #btnDelete': function (e, value, row, index) {
+            $("#MessageLabel").html("删除提示");
+            $("#btnModelSure").show();
+            $("#MessageBody").html("是否确认删除  （模块名称：" + row.ModuleName + "）这条数据  ？");
+            $('#MessageModel').modal('show');
+            $("#btnModelSure").off('click').on('click', function () {
+                $("#MessageModel").modal('hide');
+                $.ajax({
+                    url: '@Url.Action("Delete", "SysModule")',
+                    type: "post",
+                    data: { moduleKeys: JSON.stringify([row.ModuleId]) },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.status === 'success') {
+                            bindTreeData();
+                            initTable(id);
+                        }
+                        else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            });
+        }
+    }
+    //滚动条
+    //function setScroll() {
+    //    $("#ModuleTree").slimScroll({
+    //        height: 550,
+    //        alwaysVisible: false
+    //    });
+    //}
+
+        function queryParams(params) {
+            //params.startDate = $('#daterange').data('daterangepicker').startDate.format();
+            //params.endDate = $('#daterange').data('daterangepicker').endDate.format();
+            //params.rows = params.limit;                         //页面大小
+            //params.page = (params.offset / params.limit) + 1;//页码
+            //params.sort = params.sort;     //排序列名
+            //params.order = params.order; //排位命令（desc，asc）
+            params.search = params.search;
+            return params;
+        }
+    </script>
+}

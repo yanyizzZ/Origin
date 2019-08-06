@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="a7987c37a6f24c0785d78eba93554cb1" Name="Diagram1" ZoomLevel="74">
+        <EntityTypeShape EntityType="OriginModel.SysException" Width="1.5" PointX="10.75" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysLog" Width="1.5" PointX="9.125" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysModuleOperate" Width="1.5" PointX="7.5" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysRight" Width="1.5" PointX="4.125" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysRightOperate" Width="1.5" PointX="3.75" PointY="2.875" />
+        <EntityTypeShape EntityType="OriginModel.SysRole" Width="1.5" PointX="2.375" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysUser" Width="1.5" PointX="0.5" PointY="0.5" />
+        <EntityTypeShape EntityType="OriginModel.SysRoleSysUser" Width="1.5" PointX="2.25" PointY="3.375" />
+        <EntityTypeShape EntityType="OriginModel.SysModule" Width="1.5" PointX="5.875" PointY="1" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

@@ -1,0 +1,44 @@
+﻿            ViewData["BtnIdList"] = ModuleServer.GetBtnSelectList(SysConfigEnum.BtnFunction);
+            ViewData["BtnClassList"] = ModuleServer.GetBtnSelectList(SysConfigEnum.BtnClass);
+            ViewData["BtnSizeList"] = ModuleServer.GetBtnSelectList(SysConfigEnum.BtnSize);
+            ViewData["IsAuthorize"] = ModuleServer.GetBtnSelectList(SysConfigEnum.IsAuthorize);
+            switch (action)
+            {
+                case "add":
+                    {
+                        ViewBag.Title = "新增模块资源";
+                        module.ParentId = Int32.Parse(moduleKey);
+                        module.IsDisplay = true;
+                        if (module.ParentId == 0)
+                        {
+                            module.ModuleLevel = 1;
+                        }
+                        else
+                        {
+                            var parentModule = DbEntity.Get(module.ParentId);
+                            if (parentModule != null) module.ModuleLevel = ++parentModule.ModuleLevel;
+                        }
+                        break;
+                    }
+                case "edit":
+                    ViewBag.Title = "编辑模块";
+                    module = DbEntity.Get(Int32.Parse(moduleKey));
+                    if (!module.BtnClass.IsNullOrEmpty())
+                    {
+                        var c = module.BtnClass.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        viewModel.BtnClass = String.Format("{0} {1}", c[0], c[1]);
+                        viewModel.BtnSize = c[2];
+                    }
+                    break;
+            }
+            var m = DbEntity.First(c => c.ModuleId == module.ParentId);
+            if (m != null)
+            {
+                viewModel.ParentModuleName = m.ModuleName;
+            }
+            else
+            {
+                viewModel.ParentModuleName = "模块资源";
+            }
+            viewModel.Module = module;
+            return View(viewModel);
